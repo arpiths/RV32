@@ -12,8 +12,7 @@ module Insmem(clk,PC,ins);
     end
     
     always @(posedge clk)begin                    
-        ins = mem[PC];
-        
+        ins = mem[PC];        
     end  
       
 endmodule

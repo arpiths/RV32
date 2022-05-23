@@ -1,1 +1,7 @@
 implementation of a 5 stage RV32I processor in verilog hdl
+
+//details on test
+test1: insmem verified
+test2: Regfile verified
+        decoder for data hazard works well need to need to introduce immediate val generation 
+        

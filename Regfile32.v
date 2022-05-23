@@ -15,12 +15,21 @@ module Regfile32(clk,rst,
     assign rs1=ins[19:15];
     assign rs2=ins[24:20];
 
-    reg[31:0] mem[0:31];    
+    integer i;
+    reg[31:0] mem[0:31];  
+    
+    initial begin
+        rso1<=0;rso2<=0;
+    end
                  
-    always@(negedge clk && !rst) begin
-
+    always@(posedge clk) begin
+        if(rst)begin
+            for(i=0; i<32; i=i+1)
+                mem[i] = 32'b0;        
+        end
+        
         if(wb_en == 1'b1)begin
-            mem[wb_reg] = (wb_reg==0)? 32'b0 : wb_val;            
+            mem[wb_reg] = (wb_reg==0)? 32'b0 : wb_val;         
             
             rso1 = (rs1==0)? 32'b0:mem[rs1];
             rso2 = (rs2==0)? 32'b0:mem[rs2];            
@@ -30,14 +39,11 @@ module Regfile32(clk,rst,
             rso1 <= (rs1==0)? 32'b0:mem[rs1];
             rso2 <= (rs2==0)? 32'b0:mem[rs2]; 
         end
-
+        
     end
 
-    integer i;
+    
 
-    always @(posedge rst) begin
-        for(i=0; i<32; i=i+1)
-            mem[i] = 32'b0;
-    end
+    
 
 endmodule
