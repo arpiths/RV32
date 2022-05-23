@@ -1,14 +1,15 @@
 CC := iverilog
-files := Insmem.v Decode.v Regfile32.v ALU.v Control.v DataMem.v 
+CC2 := vvp
+wv := gtkwave
+files := Insmem.v 
 
 run:
 
-clean:
+clean: a.out
+	rm a.out
 
-syntax:
-
-test1: test1.v ${files}
-	iverilog -o test1 test1.v ${files}
-	vvp test1
-	gtkwave test1.vcd
+test1: test1.v ${files} testcode.txt
+	${CC} test1.v ${files}
+	${CC2} a.out
+	${wv} test1.vcd
 
