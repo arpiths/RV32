@@ -28,17 +28,12 @@ module Regfile32(clk,rst,
                 mem[i] = 32'b0;        
         end
         
-        if(wb_en == 1'b1)begin
-            mem[wb_reg] = (wb_reg==0)? 32'b0 : wb_val;         
-            
-            rso1 = (rs1==0)? 32'b0:mem[rs1];
-            rso2 = (rs2==0)? 32'b0:mem[rs2];            
-        end
-
-        else begin
-            rso1 <= (rs1==0)? 32'b0:mem[rs1];
-            rso2 <= (rs2==0)? 32'b0:mem[rs2]; 
-        end
+        else if(wb_en == 1'b1)begin
+            mem[wb_reg] = (wb_reg==0)? 32'b0 : wb_val;
+        end     
+        
+        rso1 = (rs1==0)? 32'b0:mem[rs1];
+        rso2 = (rs2==0)? 32'b0:mem[rs2];            
         
     end
 

@@ -1,37 +1,58 @@
-module RV32I(clk,rst);   
-    input clk,rst;
-
-    reg[31:0] PC;
+module RV32I();   
+    reg clk,rst;
+    reg[31:0] PC;    
     
-    always @(posedge clk ) begin
-        PC <= PC+4;
+    initial begin
+        clk<=0;
+        PC<=0;
+        rst = 1;
+        #5 rst=0; 
+        #200 $finish;       
     end
     
-    wire[31:0] ins_dec_in,ins_dec_out,alu_in1,alu_in2,rso1,rso2,ALU_out,wb_val,d_add,d_out;
-    wire[4:0] alu_rd,wb_reg,
-    wire[2:0] f3;
-    wire alu_reg_w_en,wb_en,zero,d_r_en,d_w_en,
+    initial begin
+        $dumpfile("test2.vcd");
+        $dumpvars(0,RV32I);
+    end
     
-    Insmem instruction(clk,PC,ins_dec_in);
+    always #1 clk = ~clk;    
     
-    Decode decoder(ins_dec_in,rst,
-            ALU_out,alu_rd,alu_reg_w_en,
+    always @(posedge clk)        
+        PC= rst ? 32'b0 : PC+32'd4;
+    
+    wire [31:0]ins_dec_in,alu_out,rso1,rso2,alu_in1,alu_in2,ins_dec_out,wb_val,d_add,d_out;
+    wire [2:0] f3;
+    wire[4:0]wb_reg,alu_rd;
+    wire wb_en,zero,alu_reg_w_en,d_r_en,d_w_en;
+//    assign wb_en=0;
+//    assign alu_reg_w_en=0;
+//    assign alu_rd=0; 
+    
+    Insmem insme(clk,PC,ins_dec_in);
+    
+    Decode decod(clk,ins_dec_in,rst,
+            alu_out,alu_rd,alu_reg_w_en,
             rso1,rso2,
-            alu_in1,alu_in2,ins_dec_out);
+            alu_in1,alu_in2,ins_dec_out
+            );
     
     Regfile32 regfile(clk,rst,
                 ins_dec_in,
                 wb_reg,wb_en,wb_val,
                 rso1,rso2);
-    
-    ALU alu(ins_dec_out,alu_in1,alu_in2,
-        ALU_out,zero,   
+               
+    ALU alu(clk,rst,ins_dec_out,alu_in1,alu_in2,
+        alu_out,zero,   
         alu_reg_w_en,alu_rd,    
         f3,d_r_en,d_w_en,d_add);
-
-    DataMem data (clk,rst,d_r_en,d_w_en,d_add,ALU_out,     d_out);
-
-    Control ctrl(rst,alu_rd,ALU_out,d_out,alu_reg_w_en,f3,
+                
+    Control ctrl(clk,rst,
+                alu_rd,alu_out,d_out,alu_reg_w_en,
+                f3,d_r_en,d_w_en,
                 wb_en,wb_reg,wb_val);
+                
+    DataMem data(clk,rst,d_r_en,d_w_en,d_add,alu_out,d_out);
+
+
     
 endmodule

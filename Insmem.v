@@ -3,16 +3,16 @@ module Insmem(clk,PC,ins);
     input[31:0] PC;
     output reg[31:0] ins;
    
-   reg[31:0] mem[0:999];
+   reg[31:0] mem[0:15];
    
    initial
     begin
         ins=0;
-        $readmemh("testcode.txt", mem);        
+        $readmemh("D:/arpRISC/riscv/project_1/project_1.srcs/sources_1/imports/design32/testcode.txt", mem);        
     end
     
     always @(posedge clk)begin                    
-        ins = mem[PC];        
+        ins = mem[{2'b0,PC[31:2]}];        
     end  
       
 endmodule
