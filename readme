@@ -5,3 +5,6 @@ test1: insmem verified
 test2: Regfile verified
         decoder for data hazard works well need to need to introduce immediate val generation 
         
+vivado update all modules are working and generation signals,
+functionality unverified and branch or jump instructions unimplemented
+        
