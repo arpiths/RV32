@@ -1,3 +1,23 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 30.05.2022 16:22:12
+// Design Name: 
+// Module Name: adder
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 module Control(clk,rst,
                 alu_rd,ALU_out,d_out,alu_reg_w_en,
                 f3,d_r_en,d_w_en,

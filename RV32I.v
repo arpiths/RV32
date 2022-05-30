@@ -1,21 +1,42 @@
-module RV32I();   
-    reg clk,rst;
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 30.05.2022 16:22:12
+// Design Name: 
+// Module Name: adder
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module RV32I(input clk,rst;);   
+//    reg clk,rst;
     reg[31:0] PC;    
     
-    initial begin
-        clk<=0;
-        PC<=0;
-        rst = 1;
-        #5 rst=0; 
-        #200 $finish;       
-    end
+//    initial begin
+//        clk<=0;
+//        PC<=0;
+//        rst = 1;
+//        #5 rst=0; 
+//        #200 $finish;       
+//    end
     
-    initial begin
-        $dumpfile("test2.vcd");
-        $dumpvars(0,RV32I);
-    end
+//    initial begin
+//        $dumpfile("test2.vcd");
+//        $dumpvars(0,RV32I);
+//    end
     
-    always #1 clk = ~clk;    
+//    always #1 clk = ~clk;    
     
     always @(posedge clk)        
         PC= rst ? 32'b0 : PC+32'd4;
@@ -52,7 +73,6 @@ module RV32I();
                 wb_en,wb_reg,wb_val);
                 
     DataMem data(clk,rst,d_r_en,d_w_en,d_add,alu_out,d_out);
-
 
     
 endmodule

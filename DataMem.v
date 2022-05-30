@@ -1,11 +1,11 @@
-
+`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
 // 
-// Create Date: 11.05.2022 22:59:22
+// Create Date: 30.05.2022 16:22:12
 // Design Name: 
-// Module Name: DataMem64
+// Module Name: adder
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,7 +18,6 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
 
 module DataMem(clk,rst,d_r_en,d_w_en,d_add,data_in,d_out);
     

@@ -1,3 +1,24 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 30.05.2022 16:22:12
+// Design Name: 
+// Module Name: adder
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
 module ALU(clk,rst,ins,alu_in1,alu_in2,
         alu_out,zero,   
         alu_reg_w_en,alu_rd,    
