@@ -7,4 +7,10 @@ test2: Regfile verified
         
 vivado update all modules are working and generation signals,
 functionality unverified and branch or jump instructions unimplemented
-        
+
+26-6-22 : KeyStone 1
+the behaviuoral simulation works fine for r2r and rr-i instructions
+the mem instructions will be verified soon
+branching unimplemented yet
+
+

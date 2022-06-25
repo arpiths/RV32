@@ -26,14 +26,17 @@ module Insmem(clk,PC,ins);
    
    reg[31:0] mem[0:15];
    
+   wire[31:0] nop;
+   assign nop = 32'h00000033;
+   
    initial
     begin
         ins=0;
-        $readmemh("D:/arpRISC/riscv/project_1/project_1.srcs/sources_1/imports/design32/testcode.txt", mem);        
+        $readmemh("D:/arpRISC/dock/code/RISCV-RV32I-Assembler/src/outfile.txt", mem);        
     end
     
-    always @(posedge clk)begin                    
-        ins = mem[{2'b0,PC[31:2]}];        
+    always @(negedge clk)begin                  
+         ins <= mem[PC];                
     end  
       
 endmodule
