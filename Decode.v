@@ -23,12 +23,11 @@
 module Decode(clk,ins_dec_in,rst,
             alu_out,alu_rd,alu_reg_w_en,
             rso1,rso2,
-            wb_en,wb_reg,wb_val,
             alu_in1,alu_in2,ins_dec_out
             );
-input clk,rst,wb_en,alu_reg_w_en;
-input [31:0]ins_dec_in,alu_out,rso1,rso2,wb_val;
-input[4:0]alu_rd,wb_reg;
+input clk,rst,alu_reg_w_en;
+input [31:0]ins_dec_in,alu_out,rso1,rso2;
+input[4:0]alu_rd;
 output reg [31:0] ins_dec_out ;
 output [31:0] alu_in1,alu_in2;
 
@@ -45,10 +44,6 @@ assign rs2=ins_dec_out[24:20];
 always@(posedge clk)begin
     ins_dec_out= rst? nop : ins_dec_in;
 end      
-
-//wire in1,in2;
-//assign in1= rs1==alu_rd? 1 :0;
-//assign in2= rs2==alu_rd? 1 :0;
 
 assign alu_in1 = alu_reg_w_en == 1 ? (rs1==alu_rd ? alu_out : rso1 ) : rso1;
 assign alu_in2 = alu_reg_w_en == 1 ? (rs2==alu_rd ? alu_out : rso2 ) : rso2;  

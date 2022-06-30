@@ -19,14 +19,14 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module Control(clk,rst,
-                alu_rd,d_out,alu_reg_w_en,
+                alu_rd,d_out,
                 f3_in,d_r_en,d_w_en,
                 wb_en,wb_reg,wb_val);
     
     input [4:0] alu_rd;
     input[2:0] f3_in;
     input [31:0] d_out;
-    input alu_reg_w_en,rst,clk,d_r_en,d_w_en;      
+    input rst,clk,d_r_en,d_w_en;      
     reg[2:0]f3;    
     output reg wb_en;
     output reg [4:0] wb_reg;
@@ -38,7 +38,7 @@ module Control(clk,rst,
             f3=f3_in;    
     end
     
-   always@(negedge clk)begin                                
+   always@(f3,d_out)begin                                
         casez(f3)
             3'b000:begin 
                 wb_val = $signed(d_out[7:0]);
