@@ -20,78 +20,152 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module Read(clk,rst,ins_dec_in,
+module Read(clk,PC,br_ctrl,rst,ins_dec_in,
             alu_out,alu_reg_w_en,alu_rd,
             wb_val,wb_en,wb_reg,
-            alu_in1,alu_in2,ins_dec_out
+            alu_in1,alu_in2,alu_in3,ins_dec_out,pc2
             );
-    input clk,rst,wb_en,alu_reg_w_en;
-    input [31:0]ins_dec_in,alu_out,wb_val;
+    input clk,rst,wb_en,alu_reg_w_en,br_ctrl;
+    input [31:0]ins_dec_in,alu_out,wb_val,PC;
     input[4:0] wb_reg,alu_rd;
-    output reg[31:0] ins_dec_out;
+    output reg[31:0] ins_dec_out,alu_in3,pc2;
     output[31:0] alu_in1,alu_in2;
     
+    wire[4:0] rs1,rs2;
+    
+    assign rs1=ins_dec_in[19:15];
+    assign rs2=ins_dec_in[24:20]; 
+    wire[31:0] rso1,rso2;
+    regf regfile(clk,rst,wb_en,br_ctrl,
+        rs1,rs2,wb_reg,
+        wb_val,
+        rso1,rso2);
+    
     reg[31:0] nop;
-
     initial begin
-        nop=32'h000013; 
+        nop=32'h000033; 
     end
     
-    reg[31:0] mem[0:31];  
-    reg[4:0] d1,d2;  
+    reg[4:0] d1,d2,r1,r2;  
     integer i;
     reg en1,en2,z;   
-    reg[31:0] v1,v2,ro1,ro2;      
-    wire[31:0] rs1,rs2,hz1,hz2;
+    reg[31:0] v1,v2,ro1,ro2,pc1,ins;      
+    reg[6:0] op;
+    reg [31:0] imm1,imm2,imm3,imm4,imm5;
     always@(posedge clk) begin
-    v1=alu_out;
-    v2=wb_val;
-    d1=alu_rd;
-    d2=alu_rd;
-    if(rst==1)begin
-        ins_dec_out <= nop;
-        en1<= 0;
-        en2<= 0;
-        for (i = 0; i < 32; i = i + 1)
-            mem[i] <= 0;
-    end
-    else begin
-        ins_dec_out <= ins_dec_in;
-        en1= alu_reg_w_en;
-        en2=wb_en;
-        case({en1,en2})
-            2'b00:begin mem[0] = mem[0]; end
-                
-            2'b01:begin
-                mem[d2] = (d2==0)? 32'b0 : v2;
-            end
-            2'b10:begin
-                mem[d1] = (d1==0)? 32'b0 : v1;
-            end
-            2'b11:begin
-                if(d1==d2)begin
-                    mem[d1] = (d1==0)? 32'b0 : v1;
-                end
-                else begin
-                    mem[d1] = (d1==0)? 32'b0 : v1;
-                    mem[d2] = (d2==0)? 32'b0 : v2;
-                end
-            end
-        endcase  
-        end
-    end
-    
-    assign rs1= ins_dec_out[19:15];
-    assign rs2= ins_dec_out[24:20];
-    
-    always@(negedge clk)begin    
-        ro1= mem[rs1];
-        ro2= mem[rs2];
-    end
+        ins_dec_out <= br_ctrl == 1 ? nop : ins_dec_in;
         
-    assign hz1 = wb_en == 1 ? (rs1==wb_reg ? wb_val : ro1 ) : ro1;
-    assign hz2 = wb_en == 1 ? (rs2==wb_reg ? wb_val : ro2 ) : ro2;  
-    assign alu_in1 = alu_reg_w_en == 1 ? (rs1==alu_rd ? alu_out : hz1 ) : ro1;
-    assign alu_in2 = alu_reg_w_en == 1 ? (rs2==alu_rd ? alu_out : hz2 ) : ro2;  
+        v2 <=wb_val;
+        
+        d2 <=wb_reg;  
+        pc2 <= PC;
+        en2 <= wb_en;
+        r1 <= ins_dec_in[19:15];
+        r2 <= ins_dec_in[24:20];
+        en1 <= alu_reg_w_en;
+       imm1 = {ins_dec_in[31:12],12'b0}; // lui, auipc
+       imm2 = $signed({ins_dec_in[31],ins_dec_in[19:12],ins_dec_in[20],ins_dec_in[30:21],1'b0});       //**JAL**//
+       imm3 = $signed({ins_dec_in[31],ins_dec_in[7],ins_dec_in[30:25],ins_dec_in[11:8],1'b0});  //Branch //
+       imm4 = $signed(ins_dec_in[31:20]);        //reg-imm , mem load  //jalr
+       imm5 = $signed({ins_dec_in[31:25],ins_dec_in[11:7]});         //mem store
+    end
+    
+    always@(*)begin
+        casez(ins_dec_out[6:0])                
+            7'b0110011:begin alu_in3 <= 0 ; end   //integer r-r//                             
+            7'b0010011:begin alu_in3 <= imm4 ; end   //integer reg imm//
+            7'b0000011:begin alu_in3 <= imm4 ; end   //mem load//
+            7'b0100011:begin alu_in3 <= imm5 ; end //mem store//
+            7'b0110111:begin alu_in3 <= imm1 ;  end  //LUI AUIPC//               
+            7'b1101111:begin alu_in3 <= imm2 ;  end//JAL
+            7'b0010111:begin alu_in3 <= imm4 ; end //JALR          
+            7'b1100011:begin alu_in3 <= imm3 ; end //branch   
+            default: begin  
+                alu_in3 <= 0;
+            end
+        endcase   
+    end
+
+    
+        
+        
+//    hazard hzd(en2,en1,
+//            d2,d1,rs1,rs2,
+//            v2,v1,rso1,rso2,
+//            alu_in1,alu_in2);
+
+    wire[31:0] hz1,hz2;
+    
+    assign hz1  = r1 == 0 ? 0: (wb_en == 1 ? (wb_reg == r1 ? wb_val : rso1) : rso1 );
+    assign hz2  = r2 == 0 ? 0: (wb_en == 1 ? (wb_reg == r2 ? wb_val : rso2) : rso2 );
+
+    assign alu_in1 = r1 == 0 ? 0 :(alu_reg_w_en == 1 ? (alu_rd == r1 ? alu_out : hz1) : hz1 );
+    assign alu_in2 = r2 == 0 ? 0 :(alu_reg_w_en == 1 ? (alu_rd == r2 ? alu_out : hz2) : hz2 );
 
 endmodule
+
+module regf( clk,rst,wen1,br_ctrl,
+        rs1,rs2,wr1,
+        wval1,
+        rso1,rso2);
+    
+    input clk,rst,wen1,br_ctrl;
+    input[4:0] rs1,rs2,wr1;
+    input[31:0] wval1;
+    output reg[31:0] rso1,rso2;
+    
+    reg[31:0] mem[0:31]; 
+    integer i;
+    
+    always@(posedge clk)begin
+        if(rst==1)begin
+            for (i = 0; i < 32; i = i + 1)
+                mem[i] <= 0;
+    
+        end
+        
+//        else if(br_ctrl)begin
+//            mem[0] = mem[0];
+//        end
+        
+        else begin
+            if(wen1==1)begin 
+                mem[wr1] <= wr1==0? 0: wval1;
+            end
+            else begin
+                mem[0] <= 0;
+            end
+        end
+    end
+   
+    always@(negedge clk)begin
+        if(rst==1)begin
+            rso1<=0;
+            rso2<=0;
+        end
+        else begin
+            rso1<=mem[rs1];
+            rso2<=mem[rs2];        
+        end
+    end
+endmodule
+
+//module hazard(wb_en,alu_en,
+//                wb_reg,alu_rd,rs1,rs2,
+//                wb_val,alu_out,rso1,rso2,
+//                out1,out2);
+                
+//    input wb_en,alu_en;
+//    input[4:0]  wb_reg,alu_rd,rs1,rs2;
+//    input[31:0] wb_val,alu_out,rso1,rso2;
+//    output[31:0] out1,out2;
+    
+//    wire[31:0] hz1,hz2;
+    
+//    assign hz1  = wb_reg == 0 ? 0: (wb_en == 1 ? (wb_reg == rs1 ? wb_val : rso1) : rso1 );
+//    assign hz2  = wb_reg == 0 ? 0: (wb_en == 1 ? (wb_reg == rs1 ? wb_val : rso2) : rso2 );
+
+//    assign out1 = alu_rd == 0 ? 0 :(alu_en == 1 ? (alu_rd == rs1 ? alu_out : hz1) : hz1 );
+//    assign out2 = alu_rd == 0 ? 0 :(alu_en == 1 ? (alu_rd == rs1 ? alu_out : hz2) : hz2 );
+    
+//endmodule

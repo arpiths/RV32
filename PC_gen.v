@@ -20,14 +20,16 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module PC_gen(clk,rst,pc);
-    input clk;
-    input rst;
+module PC_gen(clk,br_ctrl,rst,pc_br,pc);
+    input clk, rst,br_ctrl;
+    input [31:0] pc_br;
     output reg[31:0] pc;
     
      always @ (posedge clk) begin  
     if(rst)  
-      pc <= -4;  
+      pc <= 0;
+    else if(br_ctrl == 1)
+      pc <= pc_br;  
     else  
       pc <= pc + 4;  
   end  

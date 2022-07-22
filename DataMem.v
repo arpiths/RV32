@@ -29,7 +29,6 @@ module DataMem(clk,rst,d_r_en,d_w_en,d_add,data_in,d_out);
     reg[31:0] data[0:99];
     integer i; 
     
-
     always@(posedge clk)begin  
         if(rst)begin
              for(i=0;i<100;i=i+1)
