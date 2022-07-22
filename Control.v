@@ -1,60 +1,68 @@
-module Control(rst,alu_rd,ALU_out,d_out,alu_reg_w_en,f3,
-wb_en,wb_reg,wb_val);
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 30.05.2022 16:22:12
+// Design Name: 
+// Module Name: adder
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+module Control(clk,rst,
+                alu_rd,d_out,alu_reg_w_en,
+                f3_in,d_r_en,d_w_en,
+                wb_en,wb_reg,wb_val);
     
     input [4:0] alu_rd;
-    input[2:0] f3;
-    input [31:0] ALU_out,d_out;
-    input alu_reg_w_en,rst;
-    input [3:0] d_r_ctrl,d_w_ctrl;     
-    
-    output r_en,w_en;
-    output[31:0] data_in,wb_out;
-    
+    input[2:0] f3_in;
+    input [31:0] d_out;
+    input rst,clk,d_r_en,d_w_en,alu_reg_w_en;      
+    reg[2:0]f3;    
     output reg wb_en;
     output reg [4:0] wb_reg;
-    output reg [31:0] wb_val;
+    output reg [31:0] wb_val;   
     
-    assign r_en = d_r_ctrl[0];
-    assign w_en = d_w_ctrl[0];
-     
-    ///////////writeback stage////////// 
-    always@(d_out,d_r_ctrl,d_w_ctrl,alu_rd,f3,alu_reg_w_en && !rst)begin
-        ///LOAD///
-        wb_reg <= alu_rd; 
-        if(r_en==1'b1)begin
-            wb_en <= 1'b1;                       
-            casez(f3)
-                3'b000:begin //lb
-                    wb_val <= $signed(d_out & 32'h000F);      
-                end
-                3'b001:begin  //lh
-                    wb_val <= $signed(d_out & 32'h00FF);
-                end
-                3'b010:begin //lw
-                    wb_val <= d_out;
-                end
-                3'b100:begin  //lbu
-                    wb_val <= d_out & 32'h000F;
-                end 
-                3'b101:begin //lhu
-                    wb_val <= d_out & 32'h00FF;
-                end
-                default:
-                    wb_reg <=0;
-            endcase
-        end
-
-        else if(w_en==1'b1)begin
-            wb_en<=0;           
-        end
-
-        else begin
+    always@(posedge clk)begin             
             wb_reg <= alu_rd;
-            wb_en <= alu_reg_w_en;
-            wb_val <= ALU_out;
-        end       
+            wb_en <= rst==1 ? 0 : (d_r_en | alu_reg_w_en) ;
+            f3<=f3_in;    
     end
     
-    
+   always@(*)begin
+        if(alu_reg_w_en == 1)
+            wb_val = d_out;
+        else begin
+            casez(f3)
+                3'b000:begin 
+                    wb_val = $signed(d_out[7:0]);
+                end
+                3'b001:begin 
+                    wb_val = $signed(d_out[15:0]);
+                end
+                3'b010:begin 
+                   wb_val = d_out ;
+                end
+                3'b100:begin
+                    wb_val = d_out[7:0];
+                end
+                3'b101:begin 
+                    wb_val = d_out[15:0];
+                end
+                default: begin
+                    wb_val = 0;
+                end 
+            endcase 
+        end
+    end
+       
 endmodule
-
