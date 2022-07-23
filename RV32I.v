@@ -28,7 +28,7 @@ module RV32I(input clk, rst, output[7:0] out);
     wire wb_en,alu_reg_w_en,d_r_en,d_w_en,br_en,br_ctrl;
     wire [4:0] rs1,rs2;
     
-    assign out = alu_out;
+    assign out = wb_val[7:0];
 
     PC_gen pcgen(clk,br_ctrl,rst,pc_out,PC);
 
