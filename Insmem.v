@@ -32,7 +32,7 @@ module Insmem(clk,PC,ins);
    initial
     begin
         ins=0;
-        $readmemh("<path to a hex code>", mem);        
+        $readmemh("D:/arpRISC/dock/code/RISCV-RV32I-Assembler/src/outfile.txt", mem);        
     end
     
     always @(negedge clk)begin       

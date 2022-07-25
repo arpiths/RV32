@@ -28,8 +28,7 @@ module Read(clk,PC,br_ctrl,rst,ins_dec_in,
     input clk,rst,wb_en,alu_reg_w_en,br_ctrl;
     input [31:0]ins_dec_in,alu_out,wb_val,PC;
     input[4:0] wb_reg,alu_rd;
-    output reg[31:0] ins_dec_out,alu_in3,pc2;
-    output[31:0] alu_in1,alu_in2;
+    output reg[31:0] ins_dec_out,alu_in3,pc2, alu_in1,alu_in2;
     
     wire[4:0] rs1,rs2;
     
@@ -45,7 +44,7 @@ module Read(clk,PC,br_ctrl,rst,ins_dec_in,
     initial begin
         nop=32'h000033; 
     end
-    
+    reg[31:0] hz1,hz2;
     reg[4:0] d1,d2,r1,r2;  
     integer i;
     reg en1,en2,z;   
@@ -54,9 +53,7 @@ module Read(clk,PC,br_ctrl,rst,ins_dec_in,
     reg [31:0] imm1,imm2,imm3,imm4,imm5;
     always@(posedge clk) begin
         ins_dec_out <= br_ctrl == 1 ? nop : ins_dec_in;
-        
         v2 <=wb_val;
-        
         d2 <=wb_reg;  
         pc2 <= PC;
         en2 <= wb_en;
@@ -72,35 +69,30 @@ module Read(clk,PC,br_ctrl,rst,ins_dec_in,
     
     always@(*)begin
         casez(ins_dec_out[6:0])                
-            7'b0110011:begin alu_in3 <= 0 ; end   //integer r-r//                             
-            7'b0010011:begin alu_in3 <= imm4 ; end   //integer reg imm//
-            7'b0000011:begin alu_in3 <= imm4 ; end   //mem load//
-            7'b0100011:begin alu_in3 <= imm5 ; end //mem store//
-            7'b0110111:begin alu_in3 <= imm1 ;  end  //LUI AUIPC//               
-            7'b1101111:begin alu_in3 <= imm2 ;  end//JAL
-            7'b0010111:begin alu_in3 <= imm4 ; end //JALR          
-            7'b1100011:begin alu_in3 <= imm3 ; end //branch   
+            7'b0110011:begin alu_in3 = 0 ; end   //integer r-r//                             
+            7'b0010011:begin alu_in3 = imm4 ; end   //integer reg imm//
+            7'b0000011:begin alu_in3 = imm4 ; end   //mem load//
+            7'b0100011:begin alu_in3 = imm5 ; end //mem store//
+            7'b0110111:begin alu_in3 = imm1 ;  end  //LUI AUIPC//               
+            7'b1101111:begin alu_in3 = imm2 ;  end//JAL
+            7'b0010111:begin alu_in3 = imm4 ; end //JALR          
+            7'b1100011:begin alu_in3 = imm3 ; end //branch   
             default: begin  
-                alu_in3 <= 0;
+                alu_in3 = 0;
             end
-        endcase   
+        endcase
+     hz1  = r1 == 0 ? 0: (wb_en == 1 ? (wb_reg == r1 ? wb_val : rso1) : rso1 );
+     hz2  = r2 == 0 ? 0: (wb_en == 1 ? (wb_reg == r2 ? wb_val : rso2) : rso2 );
+     if(br_ctrl == 1)begin
+        alu_in1=0;
+        alu_in2=0;
+     end
+     else begin    
+         alu_in1 = r1 == 0 ? 0 :(alu_reg_w_en == 1 ? (alu_rd == r1 ? alu_out : hz1) : hz1 );
+         alu_in2 = r2 == 0 ? 0 :(alu_reg_w_en == 1 ? (alu_rd == r2 ? alu_out : hz2) : hz2 );
+     end   
     end
 
-    
-        
-        
-//    hazard hzd(en2,en1,
-//            d2,d1,rs1,rs2,
-//            v2,v1,rso1,rso2,
-//            alu_in1,alu_in2);
-
-    wire[31:0] hz1,hz2;
-    
-    assign hz1  = r1 == 0 ? 0: (wb_en == 1 ? (wb_reg == r1 ? wb_val : rso1) : rso1 );
-    assign hz2  = r2 == 0 ? 0: (wb_en == 1 ? (wb_reg == r2 ? wb_val : rso2) : rso2 );
-
-    assign alu_in1 = r1 == 0 ? 0 :(alu_reg_w_en == 1 ? (alu_rd == r1 ? alu_out : hz1) : hz1 );
-    assign alu_in2 = r2 == 0 ? 0 :(alu_reg_w_en == 1 ? (alu_rd == r2 ? alu_out : hz2) : hz2 );
 
 endmodule
 
